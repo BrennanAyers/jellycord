@@ -1,25 +1,21 @@
 import os
 
-import discord
+from discord.ext import commands
 from dotenv import load_dotenv
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-client = discord.Client()
+bot = commands.Bot(command_prefix='[')
 
 
-@client.event
+@bot.event
 async def on_ready():
-	print(f'{client.user} has connected to {client.guilds}!')
+	print(f'{bot.user} has connected to {bot.guilds}!')
 
 
-@client.event
-async def on_message(message):
-	if message.author == client.user:
-		return
+@bot.command(name='play')
+async def play(context):
+	await context.send('working on it, bro')
 
-	if message.content == '[play':
-		await message.channel.send('working on it, bro')
-
-client.run(TOKEN)
+bot.run(TOKEN)
