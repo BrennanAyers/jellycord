@@ -6,10 +6,20 @@ from dotenv import load_dotenv
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-client = discord.client()
+client = discord.Client()
+
 
 @client.event
 async def on_ready():
-	print(f'{client.user} has connected to Discord!')
+	print(f'{client.user} has connected to {client.guilds}!')
+
+
+@client.event
+async def on_message(message):
+	if message.author == client.user:
+		return
+
+	if message.content == '[play':
+		await message.channel.send('working on it, bro')
 
 client.run(TOKEN)
