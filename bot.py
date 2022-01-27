@@ -15,7 +15,8 @@ async def on_ready():
 
 
 @bot.command(name='play')
-async def play(context):
-	await context.send('working on it, bro')
+async def play(context, *query: str):
+	concat_query = " ".join(query)
+	await context.send(f'searching for {str(concat_query)}, eh')
 
 bot.run(TOKEN)
