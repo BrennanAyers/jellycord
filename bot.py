@@ -16,6 +16,14 @@ class Jellycord(commands.Cog):
 		concat_query = " ".join(query)
 		await context.send(f'searching for {str(concat_query)}, eh')
 
+	@commands.command(name='join')
+	async def join(self, context):
+		requester = context.message.author
+		channel = requester.voice.channel
+
+		if context.voice_client is not None and channel is not None:
+			await context.voice_client(channel)
+			await channel.connect()
 
 bot = commands.Bot(command_prefix='[')
 
