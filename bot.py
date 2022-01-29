@@ -19,11 +19,15 @@ class Jellycord(commands.Cog):
 	@commands.command(name='join')
 	async def join(self, context):
 		requester = context.message.author
-		channel = requester.voice.channel
+		if requester.voice is not None:
+			channel = requester.voice.channel
 
-		if context.voice_client is not None and channel is not None:
-			await context.voice_client(channel)
-			await channel.connect()
+			if context.voice_client is not None and channel is not None:
+				await context.voice_client(channel)
+				await channel.connect()
+		else:
+			await context.send('You have to be in a vc, dumbass')
+
 
 bot = commands.Bot(command_prefix='[')
 
