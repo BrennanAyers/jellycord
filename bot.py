@@ -34,8 +34,8 @@ class Jellycord(commands.Cog):
 				await context.author.voice.channel.connect()
 			else:
 				await context.send('You have to be in a vc, dork')
-				raise commands.CommandError("User was not in a voice channel!")
-		elif context.author.voice != context.me.voice:
+				raise commands.CommandError("User was not in a voice channel")
+		elif context.author.voice.channel != context.me.voice.channel:
 			await context.send('You have to be in the right channel, nerd')
 			raise commands.CommandError("User was in a different voice channel")
 
