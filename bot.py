@@ -27,6 +27,18 @@ class Jellycord(commands.Cog):
 		else:
 			await context.send('You have to be in a vc, dumbass')
 
+	@play.before_invoke
+	async def check_voice_client(self, context):
+		if context.voice_client is None:
+			if context.author.voice:
+				await context.author.voice.channel.connect()
+			else:
+				await context.send('You have to be in a vc, dork')
+				raise commands.CommandError("User was not in a voice channel!")
+		elif context.author.voice != context.me.voice:
+			await context.send('You have to be in the right channel, nerd')
+			raise commands.CommandError("User was in a different voice channel")
+
 
 bot = commands.Bot(command_prefix='[')
 
