@@ -27,6 +27,19 @@ class Jellycord(commands.Cog):
 		else:
 			await context.send('You have to be in a vc, dumbass')
 
+	@commands.command(name='leave')
+	async def leave(self, context):
+		if context.me.voice is not None:
+			if context.author.voice is not None:
+				if context.author.voice.channel != context.me.voice.channel:
+					await context.send('You have to be in the right channel, nerd')
+					raise commands.CommandError("User was in a different voice channel")
+				else:
+					await context.voice_client.disconnect()
+			else:
+				await context.send('You have to be in a vc, dork')
+				raise commands.CommandError("User was not in a voice channel")
+
 	@play.before_invoke
 	async def check_voice_client(self, context):
 		if context.voice_client is None:
@@ -35,6 +48,9 @@ class Jellycord(commands.Cog):
 			else:
 				await context.send('You have to be in a vc, dork')
 				raise commands.CommandError("User was not in a voice channel")
+		elif context.author.voice is None:
+			await context.send('You have to be in a vc, dork')
+			raise commands.CommandError("User was not in a voice channel")
 		elif context.author.voice.channel != context.me.voice.channel:
 			await context.send('You have to be in the right channel, nerd')
 			raise commands.CommandError("User was in a different voice channel")
