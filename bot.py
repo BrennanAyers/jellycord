@@ -19,12 +19,11 @@ class Jellycord(commands.Cog):
 	@commands.command(name='join')
 	async def join(self, context):
 		requester = context.message.author
-		if requester.voice is not None:
+		if context.me.voice is not None:
+			await context.send(f'I am already in {context.me.voice.channel}!')
+		elif requester.voice is not None:
 			channel = requester.voice.channel
-
-			if context.voice_client is not None and channel is not None:
-				await context.voice_client(channel)
-				await channel.connect()
+			await channel.connect()
 		else:
 			await context.send('You have to be in a vc, dumbass')
 
