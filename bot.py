@@ -7,6 +7,16 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 
+async def send_user_not_in_vc_error(context):
+	await context.send('You have to be in a vc, dork')
+	raise commands.CommandError("User was not in a voice channel")
+
+
+async def send_user_in_wrong_vc_error(context):
+	await context.send('You have to be in the right channel, nerd')
+	raise commands.CommandError("User was in a different voice channel")
+
+
 class Jellycord(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
@@ -32,13 +42,11 @@ class Jellycord(commands.Cog):
 		if context.me.voice is not None:
 			if context.author.voice is not None:
 				if context.author.voice.channel != context.me.voice.channel:
-					await context.send('You have to be in the right channel, nerd')
-					raise commands.CommandError("User was in a different voice channel")
+					await send_user_in_wrong_vc_error(context)
 				else:
 					await context.voice_client.disconnect()
 			else:
-				await context.send('You have to be in a vc, dork')
-				raise commands.CommandError("User was not in a voice channel")
+				await send_user_not_in_vc_error(context)
 
 	@play.before_invoke
 	async def check_voice_client(self, context):
@@ -46,14 +54,11 @@ class Jellycord(commands.Cog):
 			if context.author.voice:
 				await context.author.voice.channel.connect()
 			else:
-				await context.send('You have to be in a vc, dork')
-				raise commands.CommandError("User was not in a voice channel")
+				await send_user_not_in_vc_error(context)
 		elif context.author.voice is None:
-			await context.send('You have to be in a vc, dork')
-			raise commands.CommandError("User was not in a voice channel")
+			await send_user_not_in_vc_error(context)
 		elif context.author.voice.channel != context.me.voice.channel:
-			await context.send('You have to be in the right channel, nerd')
-			raise commands.CommandError("User was in a different voice channel")
+			await send_user_in_wrong_vc_error(context)
 
 
 bot = commands.Bot(command_prefix='[')
