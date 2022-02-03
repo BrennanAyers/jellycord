@@ -52,6 +52,14 @@ class Jellycord(commands.Cog):
 		concat_query = " ".join(query)
 		await context.send(f'searching for {str(concat_query)}, eh')
 
+	@commands.command(name='url')
+	async def url(self, context, *, url: str):
+		async with context.typing():
+			streamer = await YoutubeStreamer.from_url(url, loop=self.bot.loop)
+			context.voice_client.play(streamer, after=lambda error: print(f'Player error: {error}') if error else None)
+
+		await context.send(f'Now Playing: {streamer.title}')
+
 	@commands.command(name='join')
 	async def join(self, context):
 		requester = context.message.author
