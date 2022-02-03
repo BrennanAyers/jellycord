@@ -1,5 +1,8 @@
+import asyncio
 import os
 
+import discord
+import youtube_dl
 from discord.ext import commands
 from dotenv import load_dotenv
 
@@ -15,6 +18,29 @@ async def send_user_not_in_vc_error(context):
 async def send_user_in_wrong_vc_error(context):
 	await context.send('You have to be in the right channel, nerd')
 	raise commands.CommandError("User was in a different voice channel")
+
+ytdl_options = {
+	'format': 'bestaudio/best',
+	'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+}
+
+ytdl = youtube_dl.YoutubeDL(ytdl_options)
+
+
+class YoutubeStreamer(discord.PCMVolumeTransformer):
+	def __init__(self, source,  *, data, volume=1.0):
+		super().__init__(source, volume)
+
+		self.data = data
+		self.title = data.get('title')
+		self.url = data.get('url')
+
+	@classmethod
+	async def from_url(cls, url, *, loop=None):
+		loop = loop or asyncio.get_event_loop()
+		data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=False))
+
+		return cls(discord.FFmpegPCMAudio(data['url'], options='-vn'), data=data)
 
 
 class Jellycord(commands.Cog):
@@ -49,6 +75,7 @@ class Jellycord(commands.Cog):
 				await send_user_not_in_vc_error(context)
 
 	@play.before_invoke
+	@url.before_invoke
 	async def check_voice_client(self, context):
 		if context.voice_client is None:
 			if context.author.voice:
