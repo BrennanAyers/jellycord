@@ -65,12 +65,14 @@ class Jellycord(commands.Cog):
     @commands.command(name='play')
     async def play(self, context, *query: str):
         concat_query = " ".join(query)
-        results = jellyfin_client.jellyfin.user_items(
+        songs = jellyfin_client.jellyfin.user_items(
             params={'searchTerm': concat_query, 'IncludePeople': False, 'IncludeMedia': True, 'IncludeGenres': False,
-                    'IncludeStudios': False, 'IncludeArtists': False, 'IncludeItemTypes': 'Audio', 'Limit': 24,
-                    'Recursive': True,
-                    'EnableTotalRecordCount': False, 'ImageTypeLimit': 1})
-        truncated = [result['Name'] for result in results['Items']]
+                    'IncludeStudios': False, 'IncludeItemTypes': 'Audio', 'Limit': 24, 'Recursive': True})
+        first_result = songs['Items'][0]
+        truncated = first_result['Name']
+        url = jellyfin_client.jellyfin.download_url(first_result['Id'])
+        streamer = await YoutubeStreamer.from_url(url, loop=self.bot.loop)
+        context.voice_client.play(streamer, after=lambda error: print(f'Player error: {error}') if error else None)
         await context.send(f'results: {str(truncated)}')
 
     @commands.command(name='url')
