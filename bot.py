@@ -1,13 +1,18 @@
 import asyncio
 import os
+import uuid
 
 import discord
 import youtube_dl
 from discord.ext import commands
 from dotenv import load_dotenv
+from jellyfin_apiclient_python import JellyfinClient
 
 load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+JELLYFIN_USERNAME = os.getenv('JELLYFIN_USERNAME')
+JELLYFIN_PASSWORD = os.getenv('JELLYFIN_PASSWORD')
+JELLYFIN_URL = os.getenv('JELLYFIN_URL')
 
 
 async def send_user_not_in_vc_error(context):
@@ -43,6 +48,14 @@ class YoutubeStreamer(discord.PCMVolumeTransformer):
 		return cls(discord.FFmpegPCMAudio(data['url'], options='-vn'), data=data)
 
 
+jellyfin_client = JellyfinClient()
+jellyfin_client.config.app('Jellycord', '1.0', 'discord', str(uuid.uuid4()))
+jellyfin_client.config.data["auth.ssl"] = True
+jellyfin_client.auth.connect_to_address(JELLYFIN_URL)
+jellyfin_client.auth.login(JELLYFIN_URL, JELLYFIN_USERNAME, JELLYFIN_PASSWORD)
+jellyfin_client.authenticate({'Servers': [jellyfin_client.auth.credentials.get_credentials()['Servers'][0]]}, discover=False)
+
+
 class Jellycord(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
@@ -50,7 +63,11 @@ class Jellycord(commands.Cog):
 	@commands.command(name='play')
 	async def play(self, context, *query: str):
 		concat_query = " ".join(query)
-		await context.send(f'searching for {str(concat_query)}, eh')
+		results = jellyfin_client.jellyfin.user_items(params={'searchTerm': concat_query, 'IncludePeople': False, 'IncludeMedia': True, 'IncludeGenres': False,
+            'IncludeStudios': False, 'IncludeArtists': False, 'IncludeItemTypes': 'Audio', 'Limit': 24, 'Recursive': True,
+            'EnableTotalRecordCount': False, 'ImageTypeLimit': 1})
+		truncated = [result['Name'] for result in results['Items']]
+		await context.send(f'results: {str(truncated)}')
 
 	@commands.command(name='url')
 	async def url(self, context, *, url: str):
@@ -105,4 +122,4 @@ async def on_ready():
 
 
 bot.add_cog(Jellycord(bot))
-bot.run(TOKEN)
+bot.run(DISCORD_TOKEN)
